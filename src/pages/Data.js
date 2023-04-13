@@ -1,19 +1,28 @@
-import { useLoaderData } from "react-router-dom";
+import { Suspense } from "react";
+import { useLoaderData, defer, Await } from "react-router-dom";
+import { getSlowPosts } from "../utils/api";
 import Posts from "../components/Posts";
-import { getPosts } from "../utils/api";
-
-const Data = ({ posts }) => {
+const Data = () => {
   const loaderData = useLoaderData();
-  console.log({ loaderData });
   return (
     <div>
-      <Posts posts={loaderData} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Await
+          resolve={loaderData.posts}
+          errorElement={<p>Error loading blog posts.</p>}
+        >
+          {(loadedPosts) => {
+            console.log("loadedPosts", loadedPosts);
+            return <Posts blogPosts={loadedPosts} />;
+          }}
+        </Await>
+      </Suspense>
     </div>
   );
 };
 
-export function loader() {
-  return getPosts();
-}
+export const loader = () => {
+  return defer({ posts: getSlowPosts() });
+};
 
 export default Data;

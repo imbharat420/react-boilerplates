@@ -1,35 +1,61 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  Route,
-  RouterProvider,
-} from "react-router-dom";
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
+import RootLayout from "./Layout/RootLayout";
 
-import ErrorPage from "./pages/ErrorPage";
+/**
+ * !Routes
+ */
+import DataLayout from "./Layout/DataLayout";
+import Data, { loader as deferredBlogPostsLoader } from "./pages/Data";
+import DataDetail, {
+  loader as deferredBlogPostLoader,
+} from "./pages/DataDetail";
+
+// basic
 import Home from "./pages/Home";
-import Data, { loader as datasLoader } from "./pages/Data";
-import RootLayout from "./Layouts/RootLayout";
-import DataDetail, { loader as dataLoader } from "./pages/DataDetail";
-import DataLayout from "./Layouts/DataLayout";
 import About from "./pages/About";
+import Publish, { action as newPostAction } from "./pages/Publish";
 
-const routes = createBrowserRouter(
-  createRoutesFromElements(
-    <Route element={<RootLayout />} errorElement={<ErrorPage />}>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/data" element={<DataLayout />}>
-        <Route index element={<Data />} loader={datasLoader} />
-        <Route path=":id" element={<DataDetail />} loader={dataLoader} />
-      </Route>
-    </Route>
-  )
-);
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/about",
+        element: <About />,
+      },
+      {
+        path: "/publish",
+        element: <Publish />,
+        action: newPostAction,
+      },
+      {
+        path: "/data",
+        element: <DataLayout />,
+        children: [
+          {
+            index: true,
+            element: <Data />,
+            loader: deferredBlogPostsLoader,
+          },
+          {
+            path: ":id",
+            element: <DataDetail />,
+            loader: deferredBlogPostLoader,
+          },
+        ],
+      },
+    ],
+  },
+]);
 
 function App() {
-  return <RouterProvider router={routes} />;
+  return <RouterProvider router={router} />;
 }
 
 export default App;
